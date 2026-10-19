@@ -324,16 +324,15 @@ Assisted-by: Claude:claude-opus-5
  	scodec->regmap = devm_regmap_init_mmio(&pdev->dev, base,
  					       quirks->regmap_config);
  	if (IS_ERR(scodec->regmap)) {
-@@ -2323,12 +2503,20 @@
- 	}
+@@ -2322,11 +2502,19 @@
+ 				     "Failed to create our regmap\n");
  
  	/* Get the clocks from the DT */
 -	scodec->clk_apb = devm_clk_get_enabled(&pdev->dev, "apb");
 +	scodec->clk_apb = devm_clk_get(&pdev->dev, "apb");
- 	if (IS_ERR(scodec->clk_apb)) {
- 		dev_err(&pdev->dev, "Failed to get the APB clock\n");
- 		return PTR_ERR(scodec->clk_apb);
- 	}
+ 	if (IS_ERR(scodec->clk_apb))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(scodec->clk_apb),
+ 				     "Failed to get the APB clock\n");
  
 +	ret = clk_prepare_enable(scodec->clk_apb);
 +	if (ret)
@@ -344,8 +343,8 @@ Assisted-by: Claude:claude-opus-5
 +		return ret;
 +
  	scodec->clk_module = devm_clk_get(&pdev->dev, "codec");
- 	if (IS_ERR(scodec->clk_module)) {
- 		dev_err(&pdev->dev, "Failed to get the module clock\n");
+ 	if (IS_ERR(scodec->clk_module))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(scodec->clk_module),
 @@ -2351,6 +2539,15 @@
  		return ret;
  	}
